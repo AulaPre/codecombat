@@ -451,10 +451,11 @@ module.exports = class TeacherClassView extends RootView
       totalSpotsAvailable = _.reduce(prepaid.openSpots() for prepaid in availablePrepaids, (val, total) -> val + total) or 0
 
       availableFullLicenses = @prepaids.filter((prepaid) -> prepaid.status() is 'available' and prepaid.get('type') is 'course')
-      numStudentsWithoutFullLicenses = _(members)
+      studentsWithoutFullLicenses = _(members)
         .map((userID) => @students.get(userID))
         .filter((user) => user.prepaidType() isnt 'course' or user.prepaidStatus() isnt 'enrolled')
-        .size()
+        .value()
+      numStudentsWithoutFullLicenses = _.size(studentsWithoutFullLicenses)
       numFullLicensesAvailable = _.reduce(prepaid.openSpots() for prepaid in availableFullLicenses, (val, total) -> val + total) or 0
       if courseID not in STARTER_LICENSE_COURSE_IDS
         canAssignCourses = numFullLicensesAvailable >= numStudentsWithoutFullLicenses
@@ -476,10 +477,16 @@ module.exports = class TeacherClassView extends RootView
       remainingSpots = totalSpotsAvailable - numberEnrolled
 
       requests = []
+
+      if courseID not in STARTER_LICENSE_COURSE_IDS
+        studentsToRedeemPrepaids = studentsWithoutFullLicenses
+      else
+        studentsToRedeemPrepaids = unenrolledStudents
+
       for prepaid in availablePrepaids
         for i in _.range(prepaid.openSpots())
-          break unless _.size(unenrolledStudents) > 0
-          user = unenrolledStudents.shift()
+          break unless _.size(studentsToRedeemPrepaids) > 0
+          user = studentsToRedeemPrepaids.shift()
           requests.push(prepaid.redeem(user))
 
       @trigger 'begin-redeem-for-assign-course'

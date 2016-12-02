@@ -60,7 +60,7 @@ module.exports =
       throw new errors.Forbidden('You may not redeem licenses from this prepaid')
     unless prepaid.get('type') in ['course', 'starter_license']
       throw new errors.Forbidden('This prepaid is not of type "course" or "starter_license"')
-    if user.isEnrolled()
+    if user.isEnrolled() and user.prepaidType() is 'course'
       return res.status(200).send(prepaid.toObject({req: req}))
 
     yield prepaid.redeem(user)
