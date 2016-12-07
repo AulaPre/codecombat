@@ -447,7 +447,7 @@ module.exports = class TeacherClassView extends RootView
       availablePrepaids = @prepaids.filter((prepaid) -> prepaid.status() is 'available' and prepaid.includesCourse(courseID))
       unenrolledStudents = _(members)
         .map((userID) => @students.get(userID))
-        .filter((user) => not user.prepaidIncludesCourse(courseID))
+        .filter((user) => not user.isEnrolled() or not user.prepaidIncludesCourse(courseID))
         .value()
       totalSpotsAvailable = _.reduce(prepaid.openSpots() for prepaid in availablePrepaids, (val, total) -> val + total) or 0
 
@@ -457,7 +457,7 @@ module.exports = class TeacherClassView extends RootView
         availableFullLicenses = @prepaids.filter((prepaid) -> prepaid.status() is 'available' and prepaid.get('type') is 'course')
         numStudentsWithoutFullLicenses = _(members)
           .map((userID) => @students.get(userID))
-          .filter((user) => user.prepaidType() isnt 'course' or user.prepaidStatus() isnt 'enrolled')
+          .filter((user) => user.prepaidType() isnt 'course' or not user.isEnrolled())
           .size()
         numFullLicensesAvailable = _.reduce(prepaid.openSpots() for prepaid in availableFullLicenses, (val, total) -> val + total) or 0
         modal = new CoursesNotAssignedModal({
