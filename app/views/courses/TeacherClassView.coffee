@@ -476,8 +476,6 @@ module.exports = class TeacherClassView extends RootView
 
       requests = []
 
-      unenrolledStudents
-
       for prepaid in availablePrepaids
         for i in _.range(prepaid.openSpots())
           break unless _.size(unenrolledStudents) > 0
